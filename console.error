@@ -1,0 +1,3 @@
+.catch(error => {
+  console.error("Gagal memuat tokens.json:", error);
+});
