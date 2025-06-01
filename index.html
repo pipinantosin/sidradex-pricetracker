@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SidraDEX Price Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: center; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h1>SidraDEX Price Tracker</h1>
+  <p>Live token prices from Sidra DEX (via on-chain reserves)</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Pair</th>
+        <th>Price</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody id="table-body">
+      <tr><td colspan="3">Loading data...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const SIDRA_RPC = "https://rpc.sidrachain.com";
+    const web3 = new Web3(SIDRA_RPC);
+
+    const pairAddress = "0xYourPoolAddressHere"; // Ganti dengan address pair yang benar
+
+    const pairABI = [
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "getReserves",
+        "outputs": [
+          { "name": "_reserve0", "type": "uint112" },
+          { "name": "_reserve1", "type": "uint112" },
+          { "name": "_blockTimestampLast", "type": "uint32" }
+        ],
+        "type": "function"
+      }
+    ];
+
+    async function fetchPrice() {
+      try {
+        const contract = new web3.eth.Contract(pairABI, pairAddress);
+        const reserves = await contract.methods.getReserves().call();
+        const reserve0 = parseFloat(web3.utils.fromWei(reserves._reserve0));
+        const reserve1 = parseFloat(web3.utils.fromWei(reserves._reserve1));
+        const price = reserve1 / reserve0;
+
+        const table = document.getElementById("table-body");
+        table.innerHTML = `
+          <tr>
+            <td>ST / SDA</td>
+            <td>${price.toFixed(4)}</td>
+            <td>${new Date().toLocaleString()}</td>
+          </tr>
+        `;
+      } catch (e) {
+        console.error(e);
+        document.getElementById("table-body").innerHTML = '<tr><td colspan="3">Error loading data</td></tr>';
+      }
+    }
+
+    fetchPrice();
+    setInterval(fetchPrice, 30000);
+  </script>
+</body>
+</html>
