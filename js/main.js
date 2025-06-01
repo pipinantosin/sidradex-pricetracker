@@ -1,7 +1,7 @@
 
 const provider = new ethers.providers.JsonRpcProvider("https://sidra-proxy.ai-assist.workers.dev");
 
-const pairAbi = [
+const abiV2 = [
   {
     constant: true,
     inputs: [],
@@ -15,21 +15,45 @@ const pairAbi = [
   }
 ];
 
-console.log("main.js dimuat");
+const abiV3 = [
+  {
+    inputs: [],
+    name: "slot0",
+    outputs: [
+      { internalType: "uint160", name: "sqrtPriceX96", type: "uint160" },
+      { internalType: "int24", name: "tick", type: "int24" },
+      { internalType: "uint16", name: "observationIndex", type: "uint16" },
+      { internalType: "uint16", name: "observationCardinality", type: "uint16" },
+      { internalType: "uint16", name: "observationCardinalityNext", type: "uint16" },
+      { internalType: "uint8", name: "feeProtocol", type: "uint8" },
+      { internalType: "bool", name: "unlocked", type: "bool" }
+    ],
+    stateMutability: "view",
+    type: "function"
+  }
+];
 
 fetch("tokens.json")
   .then(res => res.json())
   .then(tokens => {
-    console.log("tokens.json dimuat:", tokens);
     const tbody = document.getElementById("token-table-body");
-
     tokens.forEach(async token => {
       try {
-        console.log("memuat token:", token.symbol);
-        const contract = new ethers.Contract(token.pairAddress, pairAbi, provider);
-        const reserves = await contract.getReserves();
-        console.log("reserves:", reserves);
-        const price = parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0);
+        const abi = token.type === "v3" ? abiV3 : abiV2;
+        const contract = new ethers.Contract(token.pairAddress, abi, provider);
+
+        let price = 0;
+
+        if (token.type === "v3") {
+          const slot0 = await contract.slot0();
+          const sqrtPriceX96 = ethers.BigNumber.from(slot0.sqrtPriceX96);
+          const numerator = sqrtPriceX96.mul(sqrtPriceX96);
+          const denominator = ethers.BigNumber.from(2).pow(192);
+          price = parseFloat(numerator.div(denominator).toString());
+        } else {
+          const reserves = await contract.getReserves();
+          price = parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0);
+        }
 
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -37,11 +61,9 @@ fetch("tokens.json")
           <td class="price">${price.toFixed(6)}</td>
         `;
         tbody.appendChild(row);
-      } catch (error) {
-        console.error(`Gagal memuat ${token.symbol}:`, error);
+      } catch (err) {
+        console.error("Gagal memuat token", token.symbol, err);
       }
     });
   })
-  .catch(error => {
-    console.error("Gagal memuat tokens.json:", error);
-  });
+  .catch(err => console.error("Gagal fetch tokens.json:", err));
