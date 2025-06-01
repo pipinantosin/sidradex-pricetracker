@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,55 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SidraDEX Price Tracker</title>
   <link rel="stylesheet" href="css/style.css" />
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 2rem;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 2rem;
-      color: #1c5d99;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: #fff;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background-color: #1c5d99;
-      color: white;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-    }
-    td.price {
-      font-weight: bold;
-      color: #4caf50;
-    }
-    td.token-symbol {
-      font-weight: bold;
-    }
-    tr:hover {
-      background-color: #f0f8ff;
-    }
-    footer {
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.9rem;
-      color: #888;
-    }
-  </style>
 </head>
 <body>
 
@@ -75,9 +27,13 @@
     Powered by SidraChain Ledger Data · Chain ID: 97453
   </footer>
 
-  <!-- Load ethers.js dari CDN resmi -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <!-- Script utama -->
-  <script src="js/main.js"></script>
+  <script>
+    window.addEventListener("load", () => {
+      const script = document.createElement("script");
+      script.src = "js/main.js";
+      document.body.appendChild(script);
+    });
+  </script>
 </body>
 </html>
