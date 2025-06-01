@@ -1,6 +1,6 @@
-const provider = new ethers.providers.JsonRpcProvider("https://node.sidrachain.com/");
 
-// ABI minimal hanya untuk ambil reserves
+const provider = new ethers.providers.JsonRpcProvider("https://sidra-proxy.ai-assist.workers.dev");
+
 const pairAbi = [
   {
     constant: true,
@@ -15,32 +15,33 @@ const pairAbi = [
   }
 ];
 
-document.addEventListener("DOMContentLoaded", () => {
-  fetch("tokens.json")
-    .then(res => res.json())
-    .then(tokens => {
-      const tbody = document.getElementById("token-table-body");
+console.log("main.js dimuat");
 
-      tokens.forEach(async token => {
-        try {
-          const contract = new ethers.Contract(token.pairAddress, pairAbi, provider);
-          const reserves = await contract.getReserves();
+fetch("tokens.json")
+  .then(res => res.json())
+  .then(tokens => {
+    console.log("tokens.json dimuat:", tokens);
+    const tbody = document.getElementById("token-table-body");
 
-          // SDA = token1, token lain = token0
-          const price = parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0);
+    tokens.forEach(async token => {
+      try {
+        console.log("memuat token:", token.symbol);
+        const contract = new ethers.Contract(token.pairAddress, pairAbi, provider);
+        const reserves = await contract.getReserves();
+        console.log("reserves:", reserves);
+        const price = parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0);
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td class="token-symbol">${token.symbol}</td>
-            <td class="price">${price.toFixed(6)}</td>
-          `;
-          tbody.appendChild(row);
-        } catch (error) {
-          console.error(`Gagal memuat ${token.symbol}:`, error);
-        }
-      });
-    })
-    .catch(error => {
-      console.error("Gagal memuat tokens.json:", error);
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="token-symbol">${token.symbol}</td>
+          <td class="price">${price.toFixed(6)}</td>
+        `;
+        tbody.appendChild(row);
+      } catch (error) {
+        console.error(`Gagal memuat ${token.symbol}:`, error);
+      }
     });
-});
+  })
+  .catch(error => {
+    console.error("Gagal memuat tokens.json:", error);
+  });
