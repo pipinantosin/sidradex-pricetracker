@@ -1,80 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SidraDEX Price Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
   <style>
-    body { font-family: sans-serif; background: #f9f9f9; padding: 2rem; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: 0.75rem; border: 1px solid #ddd; text-align: left; }
-    th { background-color: #eee; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #1c5d99;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #1c5d99;
+      color: white;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    td.price {
+      font-weight: bold;
+      color: #4caf50;
+    }
+    td.token-symbol {
+      font-weight: bold;
+    }
+    tr:hover {
+      background-color: #f0f8ff;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
   </style>
 </head>
 <body>
+
   <h1>SidraDEX Token Prices</h1>
+
   <table>
     <thead>
       <tr>
         <th>Token</th>
-        <th>Harga (dalam SDA)</th>
-        <th>Update</th>
+        <th>Price (SDA)</th>
       </tr>
     </thead>
-    <tbody id="price-table">
-      <tr><td colspan="3">Loading...</td></tr>
+    <tbody id="token-table-body">
+      <!-- Rows will be inserted here dynamically -->
     </tbody>
   </table>
 
-  <script>
-    const providerUrl = 'https://rpc.sidrachain.com'; // Ganti jika perlu
-    const web3 = new Web3(providerUrl);
+  <footer>
+    Powered by SidraChain Ledger Data · Chain ID: 97453
+  </footer>
 
-    const pairAbi = [
-      {
-        constant: true,
-        inputs: [],
-        name: "getReserves",
-        outputs: [
-          { name: "_reserve0", type: "uint112" },
-          { name: "_reserve1", type: "uint112" },
-          { name: "_blockTimestampLast", type: "uint32" }
-        ],
-        type: "function"
-      }
-    ];
+  <!-- Load ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
 
-    async function fetchPrices() {
-      const res = await fetch('tokens.json');
-      const tokens = await res.json();
-      const table = document.getElementById('price-table');
-      table.innerHTML = '';
-
-      for (let token of tokens) {
-        try {
-          const contract = new web3.eth.Contract(pairAbi, token.pairAddress);
-          const reserves = await contract.methods.getReserves().call();
-
-          const price = parseFloat(reserves._reserve1) / parseFloat(reserves._reserve0);
-          const now = new Date().toLocaleString();
-
-          table.innerHTML += `
-            <tr>
-              <td>${token.symbol}</td>
-              <td>${price.toFixed(6)}</td>
-              <td>${now}</td>
-            </tr>`;
-
-        } catch (e) {
-          table.innerHTML += `<tr><td>${token.symbol}</td><td colspan="2">Gagal load</td></tr>`;
-        }
-      }
-    }
-
-    fetchPrices();
-    setInterval(fetchPrices, 30000); // Update tiap 30 detik
-  </script>
-</body>
+  <!-- Load main.js -->
   <script src="js/main.js"></script>
+</body>
 </html>
